@@ -17,7 +17,9 @@ A Sudoku game that uses Computer Vision and Neural Networks for loading Sudoku t
 
 ## Sudoku Board v1.0.0
 
-![Sudoku Board v1.0.0](docs/sudoku_board.png "Sudoku Board v1.0.0")
+<img src="docs/sudoku_board.gif" alt="Sudoku Board v1.0.0" width="80%">
+
+
 
 The Sudoku board is built using Java AWT and Swing components.
 
