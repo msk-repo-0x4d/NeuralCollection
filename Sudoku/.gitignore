@@ -1,8 +1,13 @@
 # Compiled class file
 *.class
+/bin/
 
 # Log file
 *.log
+*-log.txt
+
+# Eclipse project file
+.project
 
 # BlueJ files
 *.ctxt
@@ -11,10 +16,8 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
-*.zip
 *.tar.gz
 *.rar
 

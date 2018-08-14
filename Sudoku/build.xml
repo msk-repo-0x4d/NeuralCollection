@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Project Sudoku Ant Build File" default="info">
+	<!-- project information -->
+	<property name="project.name" value="Sudoku" />
+	<property name="project.version" value="1.0.0" />
+	<property name="project.main" value="project.sudoku.SudokuMain" />
+
+	<!-- source directories -->
+	<property name="dir.build" value="./build" />
+	<property name="dir.bin" value="${dir.build}/bin" />
+	<property name="dir.src_lib" value="./lib" />
+	<property name="dir.src_resources" value="./.resources" />
+
+	<!-- jar directories -->
+	<property name="dir.jar" value="${dir.build}/${project.name}" />
+	<property name="dir.lib" value="${dir.jar}/lib" />
+	<property name="dir.resources" value="${dir.jar}/.resources" />
+
+	<target name="info">
+		<echo>${project.name} - v${project.version}</echo>
+		<echo>${basedir}</echo>
+	</target>
+
+	<!-- clean destination folders -->
+	<target name="clean">
+		<!-- delete folder that contains jar -->
+		<delete dir="${dir.jar}" verbose="true" />
+		<echo>Jar folder deleted</echo>
+
+		<!-- delete bin folder -->
+		<delete dir="${dir.bin}" verbose="true" />
+		<echo>bin folder deleted</echo>
+	</target>
+
+	<target name="check_os">
+		<condition property="isWindows" value="true">
+			<os family="windows" />
+		</condition>
+		<condition property="isLinux" value="true">
+			<os family="unix" />
+		</condition>
+	</target>
+
+	<!-- copy bat file -->
+	<target name="copyWindows" depends="check_os" if="isWindows">
+		<!-- copy run script-->
+		<copy todir="${dir.jar}" file="run.bat" />
+		<echo>run script (run.bat file) copied to the folder</echo>
+	</target>
+
+	<!-- copy sh file -->
+	<target name="copyLinux" depends="check_os" if="isLinux">
+		<!-- copy run script-->
+		<copy todir="${dir.jar}" file="run.sh" />
+		<echo>run script (run.sh file) copied to the folder</echo>
+	</target>
+
+	<target name="copy" depends="clean,copyWindows,copyLinux">
+		<copy todir="${dir.lib}" flatten="false">
+			<fileset dir="${dir.src_lib}" id="dependency.native.libraries" />
+		</copy>
+		<echo>Dependency lib copied</echo>
+
+		<!-- decompresses SWI Prolog zip file and creates link to .so library -->
+		<unzip src="${dir.lib}/swipl-7.4.2/swipl-7.4.2.zip" dest="${dir.lib}/swipl-7.4.2" />
+		<delete file="${dir.lib}/swipl-7.4.2/swipl-7.4.2.zip" />
+		<symlink link="${dir.lib}/swipl-7.4.2/libswipl.so"
+			resource="libswipl.so.7.4" overwrite="true" failonerror="false" />
+		<echo>SWI Prolog library decompressed and linked</echo>
+
+		<copydir src="${dir.src_resources}" dest="${dir.resources}" />
+		<echo>Resources folder copied</echo>
+
+		<copydir src="img_examples" dest="${dir.jar}/img_examples" />
+		<echo>Sudoku example images copied</echo>
+	</target>
+
+	<path id="jar-classpath">
+		<fileset dir="${dir.lib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<!-- compile Java source -->
+	<target name="compile" depends="clean,copy">
+		<mkdir dir="${dir.bin}" />
+		<javac destdir="${dir.bin}" source="1.8" target="1.8">
+			<src path="./src" />
+			<classpath refid="jar-classpath" />
+		</javac>
+		<echo>Compiled java source</echo>
+
+		<manifestclasspath property="lib.list" jarfile="${dir.jar}/${project.name}.jar">
+			<classpath refid="jar-classpath" />
+		</manifestclasspath>
+	</target>
+
+	<!-- create jar file -->
+	<target name="jar" depends="compile">
+		<jar destfile="${dir.jar}/${project.name}.jar" basedir="${dir.bin}">
+			<manifest>
+				<attribute name="Project" value="${project.name} - v${project.version}" />
+				<attribute name="Author" value="M.S.Khan" />
+				<attribute name="Copyright" value="(c) 2017 M.S.Khan (Apache License 2.0)" />
+				<attribute name="Main-Class" value="${project.main}" />
+				<attribute name="Class-Path" value="${lib.list}" />
+			</manifest>
+
+			<!-- add license and readme file -->
+			<fileset file="LICENSE" />
+			<fileset file="README.md" />
+
+			<!-- add a backup copy of resources in the jar -->
+			<fileset dir="${dir.src_resources}" />
+		</jar>
+	</target>
+</project>
